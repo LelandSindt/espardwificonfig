@@ -1,9 +1,9 @@
 espardwificonfig
 ====
 
-espardwificonfig is a User configurable WiFi for an ESP8266 using Arduino
+espardwificonfig provides a web interface for configuration of WiFi settings for an ESP8266 using Arduino.
 
-The SSID, Password and mDNS name are stored in EEPROM. 
+The SSID, Password and mDNS values are stored in EEPROM. 
 
 If the SSID and Password combination retrieved from EEPROM result in a successful WiFi connection an IP address is obtained via DHCP and the mDNS name retrieved from EEPROM  is initialized.
 
