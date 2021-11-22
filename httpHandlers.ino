@@ -3,7 +3,7 @@ void led_on () {
   message += String(millis()) + " Led On!...   ";
   message += "</body> </html>";
   server.send ( 200, "text/html", message );
-  digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on
+  digitalWrite(LED_BUILTIN, LOW);   // Turn the LED on
   Serial.println ( "Led On:  " + String(millis()) );
 }
 
@@ -13,7 +13,7 @@ void led_off () {
   message += String(millis()) + " Led Off!...  ";
   message += "</body> </html>";
   server.send ( 200, "text/html", message );
-  digitalWrite(BUILTIN_LED, HIGH);   // Turn the LED off
+  digitalWrite(LED_BUILTIN, HIGH);   // Turn the LED off
   Serial.println ( "Led Off: " + String(millis()) );
 }
 

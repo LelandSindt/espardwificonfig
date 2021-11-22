@@ -1,11 +1,11 @@
 
 
-#include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
+#include <WiFi.h>
+#include <WebServer.h>
 #include <EEPROM.h>
-#include <ESP8266mDNS.h>
+#include <ESPmDNS.h>
 
-//#define SERIALDEBUG
+#define SERIALDEBUG
 
 char ssid[33] = "";
 char password[65] = "";
@@ -25,13 +25,13 @@ int blinkInterval = 500;
 
 IPAddress mDNSIP;
 
-ESP8266WebServer server( 80 );
+WebServer server( 80 );
 
 void setup ( void ) {
 #ifdef SERIALDEBUG
   Serial.begin ( 115200 );
 #endif
-  pinMode(BUILTIN_LED, OUTPUT);     // Initialize the BUILTIN_LED pin as an output
+  pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
   eeprom_read_string(0, ssid, sizeof(ssid));
   eeprom_read_string(128, password, sizeof(password));
   eeprom_read_string(99, deviceName, sizeof(deviceName));
@@ -86,7 +86,7 @@ void setup ( void ) {
 #ifdef SERIALDEBUG
   Serial.println ( "HTTP server started" );
 #endif
-  if (!MDNS.begin(deviceName, mDNSIP)) {
+  if (!MDNS.begin(deviceName)) {
 #ifdef SERIALDEBUG
     Serial.println("Error setting up MDNS responder!");
 #endif
@@ -101,11 +101,11 @@ void setup ( void ) {
   Serial.print("IP address: ");
   Serial.println(mDNSIP);
 #endif
-  digitalWrite(BUILTIN_LED, HIGH);   // Turn the LED off
+  digitalWrite(LED_BUILTIN, HIGH);   // Turn the LED off
 } //setup()
 
 void loop ( void ) {
-  MDNS.update();
+  //MDNS.update();
   server.handleClient();
 
   unsigned long currentMillis = millis();
@@ -119,7 +119,7 @@ void loop ( void ) {
       ledState = HIGH;
     else
       ledState = LOW;
-    digitalWrite(BUILTIN_LED, ledState);
+    digitalWrite(LED_BUILTIN, ledState);
   }
 
 
