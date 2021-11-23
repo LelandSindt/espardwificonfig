@@ -34,7 +34,7 @@ void setup ( void ) {
   eeprom_read_string(99, deviceName, sizeof(deviceName));
   Serial.println(" ");
   Serial.println(ssid);
-  //Serial.println(password);
+  Serial.println(password);
   WiFi.mode(WIFI_STA);
   WiFi.begin ( ssid, password );
   Serial.println(" ");
@@ -75,11 +75,13 @@ void setup ( void ) {
   Serial.println ( "HTTP server started" );
   if (!MDNS.begin(deviceName)) {
     Serial.println("Error setting up MDNS responder!");
-  } else {
-    Serial.print(deviceName);
-    Serial.println(".local MDNS responder started");
-    MDNS.addService("http", "tcp", 80);
+    while(1) {
+      delay(1000);
+    }
   }
+  Serial.print(deviceName);
+  Serial.println(".local MDNS responder started");
+  MDNS.addService("http", "tcp", 80);
   Serial.print("IP address: ");
   Serial.println(mDNSIP);
   digitalWrite(LED_BUILTIN, HIGH);   // Turn the LED off
@@ -105,8 +107,3 @@ void loop ( void ) {
 
 
 } //loop()
-
-
-
-
-
