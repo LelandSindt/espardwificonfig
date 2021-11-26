@@ -26,7 +26,7 @@ void handleRoot() {
   } else {
     message += "Unable to connect to: " + String(ssid) + "<br>";
   }
-  message += "IP Address: " + String(mDNSIP[0]) + "." + String(mDNSIP[1]) + "." + String(mDNSIP[2]) + "." + String(mDNSIP[3]) + "<br>";
+  message += "IP Address: " + String(IP[0]) + "." + String(IP[1]) + "." + String(IP[2]) + "." + String(IP[3]) + "<br>";
   message += "Device Name: " + String(deviceName) + ".local <br>";
   message += "<a href='/ConfigWIFI'> Configure Device </a><br>";
   //message += "<a href='/led_off'> Led Off </a><br>";
@@ -39,10 +39,8 @@ void handleRoot() {
 void handleNotFound() {
   String message = "File Not Found\n\n";
   server.send ( 404, "text/plain", message );
-#ifdef SERIALDEBUG
   Serial.print ( "404 Requested: " );
   Serial.println ( server.uri() );
-#endif
 }
 
 
@@ -56,10 +54,8 @@ void handleConfigWIFI() {
     if (server.arg("SSID") != "" ) {
       server.arg("SSID").toCharArray(__ssid, 33);
       if (server.arg("SSID") != ssid) {
-        //eeprom_write_chars(0, __ssid, 33);
-        //eeprom_read_chars(0, ssid, 33);
-        eeprom_write_string(0, __ssid);
-        eeprom_read_string(0, ssid, sizeof(ssid));
+        writeFile2(LittleFS, "/wifi/ssid", __ssid);
+        readFile2(LittleFS, "/wifi/ssid").toCharArray(ssid,33);
         restartESP = true;
       }
     }
@@ -68,8 +64,7 @@ void handleConfigWIFI() {
     if (server.arg("PSK") != "") {
       server.arg("PSK").toCharArray(__psk, 65);
       if (server.arg("PSK") != password) {
-        //eeprom_write_chars(34, __psk, 65);
-        eeprom_write_string(128, __psk);
+        writeFile2(LittleFS, "/wifi/pass", __psk);
         restartESP = true;
       }
     }
@@ -78,8 +73,8 @@ void handleConfigWIFI() {
     if (server.arg("devicename") != "") {
       server.arg("devicename").toCharArray(__deviceName, 17);
       if (server.arg("devicename") != deviceName) {
-        eeprom_write_string(99, __deviceName);
-        eeprom_read_string(99, deviceName, sizeof(deviceName));
+        writeFile2(LittleFS, "/wifi/name", __deviceName);
+        readFile2(LittleFS, "/wifi/name").toCharArray(deviceName, 17);
         restartESP = true;
       }
     }
@@ -121,13 +116,13 @@ void handleRestart() {
   ESP.restart();
 }
 
-void handleClearEEPROM() {
+
+void handleFormatLittleFS() {
   String message = "<html> <head> <meta http-equiv='refresh' content='15;URL=/'/>  <title> Clear Wifi </title> " + favicon + " </head><body> ";
-  message += " Clearing EEPROM and Restarting...  ";
+  message += " Formatting LittleFS and Restarting...  ";
   message += "</body> </html>";
   server.send ( 200, "text/html", message );
-  clear_EEPROM();
+  LittleFS.format();
   delay(100);
   ESP.restart();
 }
-

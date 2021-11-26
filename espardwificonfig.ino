@@ -1,10 +1,12 @@
-
+#include <Arduino.h>
+#include "FS.h"
+#include <LittleFS.h>
 
 #include <WiFi.h>
 #include <WebServer.h>
-#include <EEPROM.h>
 #include <ESPmDNS.h>
 
+#define FORMAT_LITTLEFS_IF_FAILED true
 
 char ssid[33] = "";
 char password[65] = "";
@@ -15,26 +17,35 @@ const char *appassword = "thereisnospoon";
 
 const String favicon = "<link rel=\"shortcut icon\" href=\"data:image/vnd.microsoft.icon;base64,AA ==\"></link>";
 
-const int EEPROM_MIN_ADDR = 0;
-const int EEPROM_MAX_ADDR = 511;
-
 bool ledState = LOW;
 unsigned long previousBlinkMillis = 0;
 int blinkInterval = 500;
 
-IPAddress mDNSIP;
+IPAddress IP;
 
 WebServer server( 80 );
 
 void setup ( void ) {
   Serial.begin ( 115200 );
+  // wait at least 5 seconds for Serial
+  for (int i = 0; i <= 5; i++) {
+    if (Serial) {
+      Serial.println("start.");
+      break;
+    } else {
+      delay(1000);
+    }
+  }
+  if(!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
+    Serial.println("LittleFS Mount Failed");
+  }
   pinMode(LED_BUILTIN, OUTPUT);     // Initialize the LED_BUILTIN pin as an output
-  eeprom_read_string(0, ssid, sizeof(ssid));
-  eeprom_read_string(128, password, sizeof(password));
-  eeprom_read_string(99, deviceName, sizeof(deviceName));
+  readFile2(LittleFS, "/wifi/ssid").toCharArray(ssid, 33);
+  readFile2(LittleFS, "/wifi/pass").toCharArray(password, 65);
+  readFile2(LittleFS, "/wifi/name").toCharArray(deviceName, 17);
   Serial.println(" ");
-  Serial.println(ssid);
-  Serial.println(password);
+  //Serial.println(ssid);
+  //Serial.println(password);
   WiFi.mode(WIFI_STA);
   WiFi.begin ( ssid, password );
   Serial.println(" ");
@@ -44,7 +55,7 @@ void setup ( void ) {
   for (int i = 0; i <= 20; i++) {
     if (WiFi.status() == WL_CONNECTED ) {
       Serial.println("connected");
-      mDNSIP = WiFi.localIP();
+      IP = WiFi.localIP();
       break;
     }
     //Serial.println(WiFi.status());
@@ -58,7 +69,7 @@ void setup ( void ) {
     Serial.println(apssid);
     WiFi.mode(WIFI_AP);
     WiFi.softAP(apssid, appassword);
-    mDNSIP = WiFi.softAPIP();
+    IP = WiFi.softAPIP();
     blinkInterval = 250;
   }
 
@@ -67,28 +78,26 @@ void setup ( void ) {
   server.on ( "/", handleRoot );
   server.on ( "/ConfigWIFI", handleConfigWIFI);
   server.on ( "/restart", handleRestart);
-  server.on ( "/cleareeprom", handleClearEEPROM);
-  server.on ("/led_on", led_on);
-  server.on ("/led_off", led_off);
+  server.on ( "/formatLittleFS", handleFormatLittleFS);
+  //server.on ( "/led_on", led_on);
+  //server.on ( "/led_off", led_off);
   server.onNotFound ( handleNotFound );
   server.begin();
   Serial.println ( "HTTP server started" );
   if (!MDNS.begin(deviceName)) {
     Serial.println("Error setting up MDNS responder!");
-    while(1) {
-      delay(1000);
-    }
+  } else {
+    Serial.print(deviceName);
+    Serial.println(".local MDNS responder started");
+    MDNS.addService("http", "tcp", 80);
   }
-  Serial.print(deviceName);
-  Serial.println(".local MDNS responder started");
-  MDNS.addService("http", "tcp", 80);
   Serial.print("IP address: ");
-  Serial.println(mDNSIP);
+  Serial.println(IP);
+
   digitalWrite(LED_BUILTIN, HIGH);   // Turn the LED off
 } //setup()
 
 void loop ( void ) {
-  //MDNS.update();
   server.handleClient();
 
   unsigned long currentMillis = millis();
