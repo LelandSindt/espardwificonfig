@@ -67,7 +67,6 @@ void readFile(fs::FS &fs, const char * path){
 
 String readFile2(fs::FS &fs, const char * path){
     String data;
-    char c;
     
     Serial.printf("Reading file: %s\r\n", path);
 
@@ -79,8 +78,7 @@ String readFile2(fs::FS &fs, const char * path){
 
     Serial.write("- read length from file:");
     while(file.available()){
-        c = file.read();
-        data.concat(String(c));
+        data.concat(String(char(file.read())));
     }
     file.close();
     Serial.println(data.length());
