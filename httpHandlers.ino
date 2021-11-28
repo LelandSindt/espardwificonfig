@@ -94,7 +94,7 @@ void handleConfigWIFI() {
     message += "</body> </html>";
   } else {
     message += "<html> <head> <!-- <meta http-equiv='refresh' content='5'/> --> <title> Configure Wifi </title> " + favicon + " </head><body> ";
-    message += "<form action=\"ConfigWIFI\" method=\"post\"> SSID: <input type=\"text\" name=\"SSID\" value=\"" + String(ssid) + "\"> <br> Preshared Key: <input type=\"password\" name=\"PSK\" value=\"\"> <br> Device Name: <input type=\"text\" name=\"devicename\" value=\"" + String(deviceName) + "\"> .local <br> <input type=\"checkbox\" name=\"REBOOT\" value=\"True\" checked> Reboot? <br> <br>  <input type=\"submit\" value=\"Submit\"> </form> ";
+    message += "<form action=\"ConfigWIFI\" method=\"post\"> SSID: <input type=\"text\" name=\"SSID\" value=\"" + String(ssid) + "\" maxlength=\"32\"> <br> Preshared Key: <input type=\"password\" name=\"PSK\" value=\"\" maxlength=\"64\" > <br> Device Name: <input type=\"text\" name=\"devicename\" value=\"" + String(deviceName) + "\" maxlength=\"16\" > .local <br> <input type=\"checkbox\" name=\"REBOOT\" value=\"True\" checked> Reboot? <br> <br>  <input type=\"submit\" value=\"Submit\"> </form> ";
     message += "</body> </html>";
   }
 
