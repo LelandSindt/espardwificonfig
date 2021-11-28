@@ -6,6 +6,8 @@
 #include <WebServer.h>
 #include <ESPmDNS.h>
 
+#include <ArduinoOTA.h>
+
 #define FORMAT_LITTLEFS_IF_FAILED true
 
 char ssid[33] = "";
@@ -19,7 +21,7 @@ const String favicon = "<link rel=\"shortcut icon\" href=\"data:image/vnd.micros
 
 bool ledState = LOW;
 unsigned long previousBlinkMillis = 0;
-int blinkInterval = 500;
+int blinkInterval = 1000;
 
 IPAddress IP;
 
@@ -94,11 +96,41 @@ void setup ( void ) {
   Serial.print("IP address: ");
   Serial.println(IP);
 
+    ArduinoOTA
+    .onStart([]() {
+      String type;
+      if (ArduinoOTA.getCommand() == U_FLASH)
+        type = "sketch";
+      else // U_SPIFFS
+        type = "filesystem";
+
+      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+      Serial.println("Start updating " + type);
+    })
+    .onEnd([]() {
+      Serial.println("\nEnd");
+    })
+    .onProgress([](unsigned int progress, unsigned int total) {
+      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    })
+    .onError([](ota_error_t error) {
+      Serial.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+      else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+      else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+      else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+      else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    });
+
+  ArduinoOTA.begin();
+
+
   digitalWrite(LED_BUILTIN, HIGH);   // Turn the LED off
 } //setup()
 
 void loop ( void ) {
   server.handleClient();
+  ArduinoOTA.handle();
 
   unsigned long currentMillis = millis();
 
